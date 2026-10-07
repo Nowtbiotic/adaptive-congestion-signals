@@ -1,0 +1,25 @@
+{
+  "demo_only": true,
+  "note": "These prototype defaults are for Review-I demonstration. Freeze final evaluation parameters before final experiments.",
+  "selector": {
+    "queue_min_packets": 0,
+    "queue_max_packets": 100,
+    "queue_growth_max_packets_per_sec": 100,
+    "utilization_min": 0,
+    "utilization_max": 1,
+    "utilization_persistence_threshold": 0.7,
+    "rtt_growth_min_ms_per_sec": 0,
+    "rtt_growth_max_ms_per_sec": 100,
+    "rtt_growth_persistence_threshold_ms_per_sec": 0.5,
+    "wq1": 0.5,
+    "wq2": 0.5,
+    "wu1": 0.5,
+    "wu2": 0.5,
+    "wr1": 0.5,
+    "wr2": 0.5,
+    "hysteresis_margin": 0.08,
+    "persistence_samples": 3,
+    "history_samples": 5,
+    "initial_signal": "QUEUE"
+  }
+}

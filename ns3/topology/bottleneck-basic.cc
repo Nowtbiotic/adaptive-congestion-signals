@@ -1,3 +1,5 @@
+#include <sstream>
+#include <string>
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
@@ -124,24 +126,32 @@ QueuePacketsInQueue(uint32_t oldValue,
 // ------------------------------------------------------------
 // RTT trace callback
 // ------------------------------------------------------------
-
 void
-RttTrace(Time oldValue,
-         Time newValue)
+RttTrace(std::string context, Time oldValue, Time newValue)
 {
-    double now = Simulator::Now().GetSeconds();
+    size_t p = context.find("/NodeList/") + 10;
+    uint32_t nodeId = std::stoi(context.substr(p, context.find('/', p) - p));
 
-    rttFile
-        << now << ","
-        << newValue.GetMilliSeconds()
-        << "\n";
+    rttFile << Simulator::Now().GetSeconds() << ","
+            << nodeId << ","
+            << newValue.GetSeconds() * 1000.0 << "\n";
 }
 void
 ConnectRttTraces()
 {
-    Config::ConnectWithoutContext(
-        "/NodeList/*/$ns3::TcpL4Protocol/SocketList/*/RTT",
-        MakeCallback(&RttTrace));
+    for (uint32_t nodeId = 0; nodeId < 2; ++nodeId)
+    {
+        std::ostringstream path;
+        path << "/NodeList/" << nodeId
+             << "/$ns3::TcpL4Protocol/SocketList/*/RTT";
+
+        bool ok = Config::ConnectFailSafe(
+            path.str(),
+            MakeCallback(&RttTrace));
+
+        std::cout << "RTT trace node " << nodeId
+                  << " connected=" << ok << std::endl;
+    }
 }
 
 // ------------------------------------------------------------
@@ -375,7 +385,7 @@ main(int argc, char *argv[])
         << "time,queue_packets\n";
 
     rttFile
-        << "time,rtt_ms\n";
+        << "time,node,rtt_ms\n";
 
     utilizationFile
         << "time,utilization\n";
@@ -420,9 +430,7 @@ main(int argc, char *argv[])
     // --------------------------------------------------------
     // 13. Connect TCP RTT traces
     // --------------------------------------------------------
-    Simulator::Schedule(
-    Seconds(1.0),
-    &ConnectRttTraces);
+    Simulator::Schedule(Seconds(1.01), &ConnectRttTraces);
 
     // --------------------------------------------------------
     // 14. Start periodic measurements
